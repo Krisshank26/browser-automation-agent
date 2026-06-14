@@ -1,26 +1,15 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 import {chromium } from "playwright" 
-/* import fs from "fs" */ 
-import randomUUID from "crypto" 
+/* import fs from "fs" 
+import randomUUID from "crypto" */ 
 import {OpenRouter } from "@openrouter/sdk" 
 import dotenv from "dotenv" 
-import { off } from 'cluster';
+/* import { off } from 'cluster' ; */ 
 
 dotenv.config() 
 
-/* test('get started link', async ({ page }) => { 
-  await page.goto('https://playwright.dev/' ) ; 
-
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
-
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible() ; 
-} ) ; */ 
-
 let browser, context, page, screenshotPayload 
-/* const path= fs.openSync("logs/tests.log", "w" ) */ 
 
 async function openBrowser() 
 { 
@@ -30,12 +19,9 @@ async function openBrowser()
     context= await browser.newContext() ; 
     page= await browser.newPage() ; 
 
-    // fs.writeFileSync(path, "Browser Opened Successfully " ) 
-
     return ({status: "Successful", message: "Browser Opened Successfully " } ) 
   } catch (error ) 
   { 
-    // fs.writeFileSync(path, "Failed to Open Browser- Error: "+ error.message ) 
     return ({status: "Fail", message: error.message } ) 
   } 
 } 
@@ -45,11 +31,9 @@ async function navigateToUrl(page, url )
   try 
   { 
     await page.goto(url ) 
-    // fs.writeFileSync("./logs/tests.log", "Navigated to URL "+ url+ " Successfully " ) 
     return ({status: "Successful", message: `Navigated to URL ${url } Successfully ` } ) 
   } catch (error ) 
   { 
-    // fs.writeFileSync("./logs/tests.log", `Failed to Navigate to URL ${url }- Error: ${error.message } ` ) 
     return ({status: "Fail", message: error.message } ) 
   } 
 } 
@@ -58,19 +42,13 @@ async function takeScreenshot(page )
 { 
   try 
   { 
-    const id= randomUUID.randomUUID().slice(0, 8 ) 
-
     const screenshot= await page.screenshot({fullPage: true } ) 
 
     screenshotPayload= `data:image/png;base64,${screenshot.toString("base64" ) }` 
-    
-    // fs.writeFileSync('logs/screenshot/screenshot_'+ id+ '.png', screenshot ) 
-    // fs.writeFileSync(path, "Screenshot Taken Successfully" ) 
 
     return {"status": "Successful" } 
   } catch (error ) 
   { 
-    // fs.writeFileSync(path, "Screenshot Failed- Error: "+ error.message ) 
     return ({status: "Fail", message: error.message } ) 
   } 
 } 
@@ -116,14 +94,11 @@ async function scroll(page, direction, amount )
       page.mouse.wheel(-amount, 0 ) 
     } 
 
-    // fs.writeFileSync(path, `Scrolled ${direction } by ${amount } pixels, Successfully ` ) 
-
     console.log("Scrolled Page Here" ) 
     
     return ({status: "Successful", message: `Scrolled ${direction } by ${amount } pixels Successfully ` } ) 
   } catch (error ) 
   { 
-    // fs.writeFileSync(path, `Failed to Scroll: Error- ${error.message } ` ) 
     return ({status: "Fail", message: error.message } ) 
   } 
 } 
@@ -134,8 +109,6 @@ async function getFormCoordinatesByLabel(page, label )
   { 
     const elm= await page.getByLabel(label ) 
     const box= await elm.boundingBox() 
-    /* await element.scrollIntoViewIfNeeded() 
-    const box= await element.boundingBox() */ 
     console.log("Coordinates are "+ box.x+ " "+ box.y ) 
     return ({status: "Successful", message: `${box.x },${box.y }` } ) 
   } catch (error ) 
@@ -149,12 +122,10 @@ async function clickOnScreen(page, x, y )
   try 
   { 
     await page.mouse.click(x, y ) 
-    // fs.writeFileSync(path, `Clicked on Screen at Coordinates (${x }, ${y } ), Successfully ` ) 
     console.log("Clicked on Screen at Coordinates "+ x+ " "+ y ) 
     return ({status: "Successful", message: `Clicked on Screen at coordinates (${x }, ${y } ), Successfully ` } ) 
   } catch (error ) 
   { 
-    // fs.writeFileSync(path, `Failed to Click on Screen at Coordinates (${x }, ${y } )- Error: ${error.message } ` ) 
     return ({status: "Fail", message: error.message } ) 
   } 
 } 
@@ -164,11 +135,9 @@ async function doubleClick(page, x, y )
   try 
   { 
     await page.mouse.dblclick(x, y ) 
-    // fs.writeFileSync(path, `Double Clicked on Screen at Coordinates (${x }, ${y } ), Successfully ` ) 
     return ({status: "Successful", message: `Double Clicked on Screen at Coordinates (${x }, ${y } ), Successfully ` } ) 
   } catch (error ) 
   { 
-    // fs.writeFileSync(path, `Failed to Double Click on Screen at Coordinates (${x }, ${y } )- Error: ${error.message } ` ) 
     return ({status: "Fail", message: error.message } ) 
   } 
 } 
@@ -178,51 +147,55 @@ async function sendKeys(page, keys )
   try 
   { 
     await page.keyboard.type(keys ) 
-    // fs.writeFileSync(path, `Type Keys ${keys }, Successfully ` ) 
     return ({status: "Successful", message: "Sent keys "+ keys+ " Successfully " } ) 
   } catch (error ) 
   { 
-    // fs.writeFileSync(path, `Failed to Type Keys ${keys }- Error: ${error.message } ` ) 
     return ({status: "Fail", message: error.message } ) 
   } 
 } 
 
+function safeParseJSON(raw ) 
+{ 
+  let cleaned= raw.trim() 
+
+  cleaned= cleaned.replace(/^```json\s*/i,"" ).replace(/^```\s*/i,"" ).replace(/```\s*$/i,"" ) 
+
+  const firstBracket= cleaned.indexOf('{' ) 
+
+  let depth= 0, end= -1 
+
+  for(let i= firstBracket ; i< cleaned.length ; ++i ) 
+  { 
+    if(cleaned[i]== '{' ) 
+    { 
+      depth++ ; 
+    } 
+    else if(cleaned[i]== '}' ) 
+    { 
+      depth-- ; 
+    } 
+    if(depth== 0 ) 
+    { 
+      end= i ; 
+      break ; 
+    } 
+  } 
+
+  const jsonStr= cleaned.slice(firstBracket, (end+ 1 ) ) 
+
+  const jsonObject= JSON.parse(jsonStr ) 
+
+  return jsonObject 
+} 
+
 test("fill form ", async()=> 
 { 
-    /* let result= await openBrowser() ; 
-    console.log(result ) 
-
-    if(result.status= "Successful" ) 
-    { 
-      result= await navigateToUrl(page, "https://ui.shadcn.com/docs/forms/react-hook-form" ) 
-      console.log(result ) 
-      await scroll(page, "down", 800 ) 
-      result= await getFormCoordinatesByLabel(page, "Username" ) 
-      while(result.status!= "Successful" ) 
-      { 
-        await scroll(page, "down", 500 ) 
-        result= await getFormCoordinatesByLabel(page, "Username" ) 
-      } 
-      console.log(result ) 
-      if(result.status== "Successful" ) 
-      { 
-        let coordinates= result.message.split("," ).map(Number ) 
-        result= await clickOnScreen(page, coordinates[0], coordinates[1] ) 
-        await sendKeys(page, "Krisshank" ) 
-      } 
-    } */ 
-    
-    /* const googleAI= new GoogleGenAI( 
-      { 
-        apiKey: process.env.GOOGLE_GEMINI_API_KEY 
-      } 
-    ) */ 
     const client= new OpenRouter( 
       { 
         apiKey: process.env.OPENROUTER_API_KEY 
       } 
     ) 
-    const system_prompt= 
+    /* const system_prompt= 
     `You are a helpful Browser Automation Tool called Playwright. You are similar to the actual Playwright browser automation tool. 
     Your task is to take users query as an input, take actions with the set of tools provided to you sequentially step by step, and complete the task. 
     
@@ -234,6 +207,12 @@ test("fill form ", async()=>
     1. You must return the response strictly in JSON Format. 
     
     2. You must THINK and perform the ACTION in step by step manner based on previous steps and actions always before taking the next step or providing the final observation. 
+
+    3. You must not repeat an ACTION again if it yeilds a Successful message. 
+
+    4. You must wait for the ACTION step to yeild a RESULT before moving forward with any step. 
+
+    5. You must not try to batch multiple tool calls in a single ACTION step. Call them one by one THINK-> ACTION-> RESULT, and then call the next important ACTION. 
     
     TOOLS: 
     
@@ -357,7 +336,154 @@ test("fill form ", async()=>
     
     assistant: {step: "THINK", observation: "I have filled the form elements with labels 'Username' and 'More about you' successfully. I have completed the task as per the user's request, and end the session here." } 
     
-    assistant: {step: "END" } ` 
+    assistant: {step: "END" } ` */ 
+
+    const system_prompt= 
+    `You are a helpful Browser Automation Agent called Playwright. You behave like the real Playwright browser automation library, controlled step by step via a fixed set of tools.
+
+  Your task: take the user's query as input, then reason and act through a strict sequential loop — THINK, then ACTION (one tool call), then wait for RESULT — until the task is complete, then emit END.
+
+  ============================
+  OUTPUT FORMAT (MANDATORY)
+  ============================
+  You must respond with EXACTLY ONE valid JSON object per turn — no markdown, no code fences, no extra text before or after.
+
+  Schema:
+  {
+    "step": "INPUT" | "THINK" | "ACTION" | "RESULT" | "END",
+    "tool_name": "<tool name, only when step is ACTION>",
+    "tool_args": { "<arg>": "<value>" },
+    "observation": "<reasoning, result interpretation, or summary>"
+  }
+
+  - All keys and string values must use double quotes.
+  - Omit "tool_name" and "tool_args" entirely when step is not "ACTION".
+  - Never output multiple JSON objects, arrays, or commentary in a single response.
+  - Never wrap output in Backticks json or any code block. 
+
+  ============================
+  STRICT RULES
+  ============================
+  1. Output must be valid JSON, parsable by JSON.parse(), every single turn.
+  2. Follow this cycle without skipping or merging steps:
+    INPUT (once, at start) → THINK → ACTION → RESULT → THINK → ACTION → RESULT → ... → END
+  3. Each ACTION step must call exactly ONE tool with valid arguments matching the tool's signature.
+  4. After every ACTION, you will receive a RESULT message from the system. You must read it carefully before deciding the next THINK.
+  5. Never repeat an ACTION that already returned a success RESULT for the same goal (e.g., do not call openBrowser twice, do not navigate to the same URL twice, do not re-click a field you already filled).
+  6. If a RESULT indicates an error, THINK about the cause and try an alternative approach (different label text, more scrolling, re-checking coordinates) — do not blindly retry the identical action.
+  7. Use takeScreenshot() whenever you need to verify the current page state, especially after navigation, scrolling, or before deciding coordinates for a new field.
+  8. Only call getFormCoordinatesByLabel() for a label you have visually confirmed exists on the current page (via a screenshot RESULT).
+  9. Before sendKeys(), you must have already clicked on the target field's coordinates in the immediately preceding successful ACTION.
+  10. Once all requested fields are filled and confirmed (via a final screenshot if needed), emit a final THINK summarizing completion, then emit {"step": "END"} and stop. Do not call any tool after END.
+  11. If a task cannot be completed after reasonable attempts (e.g., label never found after 3 scroll+screenshot cycles), THINK to explain the issue, then emit END with an observation describing what was and wasn't completed. 
+
+  ============================
+  CRITICAL: 
+  ============================
+  
+  Output ONE single JSON object only. Do not output multiple JSON objects in one response. Do not add any text, explanation, or markdown formatting before or after the JSON object. 
+  Your entire response must be parsable by JSON.parse() with no modification.
+
+  ============================
+  TOOLS
+  ============================
+  1. openBrowser() — Opens a new browser instance and page. No args. Returns success/error message.
+  2. navigateToUrl(url: string) — Navigates the current page to the given URL. Returns success/error message.
+  3. takeScreenshot() — Captures the current page state. No args. Returns a description of visible fields/labels.
+  4. scroll(amount: number) — Scrolls the page down by the given pixel amount. Returns success/error message.
+  5. getFormCoordinatesByLabel(label: string) — Returns the (x, y) coordinates of the form element associated with the given label, if visible. Returns success/error message.
+  6. clickOnScreen(x: number, y: number) — Clicks at the given screen coordinates. Returns success/error message.
+  7. doubleClick(x: number, y: number) — Double-clicks at the given screen coordinates. Returns success/error message.
+  8. sendKeys(keys: string) — Types the given string into the currently focused element. Returns success/error message.
+
+  ============================
+  EXAMPLE
+  ============================
+  user: "Navigate to https://ui.shadcn.com/docs/forms/react-hook-form, identify the form elements with labels 'Username' and 'More about you', and fill them with sample data."
+
+  assistant: {"step": "INPUT", "observation": "User wants me to navigate to the given URL, find form fields labeled 'Username' and 'More about you', and fill both with sample data."}
+
+  assistant: {"step": "THINK", "observation": "First I need to open a browser instance using openBrowser()."}
+
+  assistant: {"step": "ACTION", "tool_name": "openBrowser", "tool_args": {}, "observation": "Opening a new browser instance."}
+
+  assistant: {"step": "RESULT", "observation": "Browser opened successfully."}
+
+  assistant: {"step": "THINK", "observation": "Browser is ready. Next, navigate to the target URL using navigateToUrl()."}
+
+  assistant: {"step": "ACTION", "tool_name": "navigateToUrl", "tool_args": {"url": "https://ui.shadcn.com/docs/forms/react-hook-form"}, "observation": "Navigating to the target page."}
+
+  assistant: {"step": "RESULT", "observation": "Navigated successfully."}
+
+  assistant: {"step": "THINK", "observation": "I need to check what fields are currently visible before searching for 'Username' or 'More about you'. I'll take a screenshot."}
+
+  assistant: {"step": "ACTION", "tool_name": "takeScreenshot", "tool_args": {}, "observation": "Capturing current page state."}
+
+  assistant: {"step": "RESULT", "observation": "Visible fields: Email, Password."}
+
+  assistant: {"step": "THINK", "observation": "Neither target field is visible. I'll scroll down to reveal more of the form."}
+
+  assistant: {"step": "ACTION", "tool_name": "scroll", "tool_args": {"amount": 500}, "observation": "Scrolling down to find the target fields."}
+
+  assistant: {"step": "RESULT", "observation": "Scrolled down by 500 pixels."}
+
+  assistant: {"step": "THINK", "observation": "I'll take another screenshot to check if 'Username' is now visible."}
+
+  assistant: {"step": "ACTION", "tool_name": "takeScreenshot", "tool_args": {}, "observation": "Capturing current page state after scrolling."}
+
+  assistant: {"step": "RESULT", "observation": "Visible fields: Username, Address, Posts."}
+
+  assistant: {"step": "THINK", "observation": "'Username' is now visible. I'll get its coordinates using getFormCoordinatesByLabel()."}
+
+  assistant: {"step": "ACTION", "tool_name": "getFormCoordinatesByLabel", "tool_args": {"label": "Username"}, "observation": "Locating the Username field."}
+
+  assistant: {"step": "RESULT", "observation": "Coordinates found: (20, 50)."}
+
+  assistant: {"step": "THINK", "observation": "I'll click on (20, 50) to focus the Username field."}
+
+  assistant: {"step": "ACTION", "tool_name": "clickOnScreen", "tool_args": {"x": 20, "y": 50}, "observation": "Clicking on the Username field."}
+
+  assistant: {"step": "RESULT", "observation": "Clicked successfully."}
+
+  assistant: {"step": "THINK", "observation": "The Username field is focused. I'll type sample text into it."}
+
+  assistant: {"step": "ACTION", "tool_name": "sendKeys", "tool_args": {"keys": "Krisshank"}, "observation": "Typing sample username."}
+
+  assistant: {"step": "RESULT", "observation": "Keys sent successfully."}
+
+  assistant: {"step": "THINK", "observation": "'Username' is done. Now I need to find 'More about you'. I'll scroll down further."}
+
+  assistant: {"step": "ACTION", "tool_name": "scroll", "tool_args": {"amount": 500}, "observation": "Scrolling down to find 'More about you'."}
+
+  assistant: {"step": "RESULT", "observation": "Scrolled down by 500 pixels."}
+
+  assistant: {"step": "THINK", "observation": "I'll take a screenshot to confirm 'More about you' is now visible."}
+
+  assistant: {"step": "ACTION", "tool_name": "takeScreenshot", "tool_args": {}, "observation": "Capturing current page state after scrolling."}
+
+  assistant: {"step": "RESULT", "observation": "Visible fields: More about you, Stories."}
+
+  assistant: {"step": "THINK", "observation": "'More about you' is visible. I'll get its coordinates."}
+
+  assistant: {"step": "ACTION", "tool_name": "getFormCoordinatesByLabel", "tool_args": {"label": "More about you"}, "observation": "Locating the 'More about you' field."}
+
+  assistant: {"step": "RESULT", "observation": "Coordinates found: (60, 150)."}
+
+  assistant: {"step": "THINK", "observation": "I'll click on (60, 150) to focus this field."}
+
+  assistant: {"step": "ACTION", "tool_name": "clickOnScreen", "tool_args": {"x": 60, "y": 150}, "observation": "Clicking on the 'More about you' field."}
+
+  assistant: {"step": "RESULT", "observation": "Clicked successfully."}
+
+  assistant: {"step": "THINK", "observation": "The field is focused. I'll type sample descriptive text into it."}
+
+  assistant: {"step": "ACTION", "tool_name": "sendKeys", "tool_args": {"keys": "Hello, I am a student studying Computer Science and learning new technologies every day."}, "observation": "Typing sample description."}
+
+  assistant: {"step": "RESULT", "observation": "Keys sent successfully."}
+
+  assistant: {"step": "THINK", "observation": "Both 'Username' and 'More about you' fields have been filled successfully. The task is complete."}
+
+  assistant: {"step": "END", "observation": "Task completed: both fields were located and filled successfully."} ` 
 
     const userQuery= `Navigate to: https://ui.shadcn.com/docs/forms/react-hook-form
     Identify the form elements on the page (Username and Description fields)
@@ -365,108 +491,116 @@ test("fill form ", async()=>
 
     let messages= [{role: "system", content: system_prompt }, {role: "user", content: userQuery } ] 
 
-    while(true ) 
+    async function main() 
     { 
-      const response= await client.chat.send({ 
-        chatRequest: 
-        { 
-          model: "openai/gpt-oss-120b:free", 
-          messages: messages, 
-          temperature: 0.05, 
-          stream: false 
-        } 
-      } ) 
-      let res= JSON.parse(response.choices[0].message.content ) 
-      console.log(res ) 
-      if(res.step== "INPUT" ) 
+      while(true ) 
       { 
-        messages.push({role: "assistant", content: JSON.stringify(res ) } ) 
-      } 
-      else if(res.step== "THINK" ) 
-      { 
-        messages.push({role: "assistant", content: JSON.stringify(res ) } ) 
-      } 
-      else if(res.step== "ACTION" ) 
-      { 
-        if(res.tool_name== "openBrowser" ) 
-        { 
-          const result= await openBrowser() 
-          console.log(result ) 
-          messages.push({role: "assistant", content: JSON.stringify({step: "RESULT", observation: result.message } ) } ) 
-        } 
-        else if(res.tool_name== "navigateToUrl" ) 
-        { 
-          const result= await navigateToUrl(page, res.tool_args.utl ) 
-          messages.push({role: "assistant", content: JSON.stringify({step: "RESULT", observation: result.message } ) } ) 
-        } 
-        else if(res.tool_name== "takeScreenshot" ) 
-        { 
-          const result= await takeScreenshot(page ) 
-          let resultMessage 
-          if(result.status== "Successful" ) 
+        console.log(messages[(messages.length- 1 ) ] ) 
+        const response= await client.chat.send({ 
+          chatRequest: 
           { 
-            const imageChat= await client.chat.send({ 
-              chatRequest: 
-              { 
-                model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", 
-                messages: [{ 
-                  role: "assistant", 
-                  content: [{ 
-                    type: "text", 
-                    text: "What are fields and labels visible on the viewport of this page? " 
-                  }, { 
-                    type: "image_url", 
-                    imageUrl: {url: screenshotPayload } 
-                  } ] 
-                } ], 
-                temperature: 0.05, 
-                stream: false 
-              } 
-            } ) 
-            resultMessage= JSON.stringify({step: "RESULT", observation: imageChat.choices[0].message.content } ) 
+            model: "openai/gpt-oss-120b:free", 
+            //@ts-ignore 
+            messages: messages, 
+            temperature: 0.02, 
+            stream: false, 
+            responseFormat: {type: "json_object" } 
+          } 
+        } ) 
+        console.log("Raw Response Here "+ response.choices[0].message.content ) 
+        let res= safeParseJSON(response.choices[0].message.content ) 
+        console.log(res ) 
+        if(res.step== "INPUT" ) 
+        { 
+          messages.push({role: "assistant", content: JSON.stringify(res ) } ) 
+        } 
+        else if(res.step== "THINK" ) 
+        { 
+          messages.push({role: "assistant", content: JSON.stringify(res ) } ) 
+        } 
+        else if(res.step== "ACTION" ) 
+        { 
+          if(res.tool_name== "openBrowser" ) 
+          { 
+            const result= await openBrowser() 
+            console.log(result ) 
+            messages.push({role: "assistant", content: JSON.stringify({step: "RESULT", observation: result.message } ) } ) 
+          } 
+          else if(res.tool_name== "navigateToUrl" ) 
+          { 
+            const result= await navigateToUrl(page, res.tool_args.url ) 
+            messages.push({role: "assistant", content: JSON.stringify({step: "RESULT", observation: result.message } ) } ) 
+          } 
+          else if(res.tool_name== "takeScreenshot" ) 
+          { 
+            const result= await takeScreenshot(page ) 
+            let resultMessage 
+            if(result.status== "Successful" ) 
+            { 
+              const imageChat= await client.chat.send({ 
+                chatRequest: 
+                { 
+                  model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", 
+                  messages: [{ 
+                    role: "assistant", 
+                    content: [{ 
+                      type: "text", 
+                      text: "What are fields and labels visible on the viewport of this page? " 
+                    }, { 
+                      type: "image_url", 
+                      imageUrl: {url: screenshotPayload } 
+                    } ] 
+                  } ], 
+                  temperature: 0.05, 
+                  stream: false, 
+                  responseFormat: {type: "json_object" } 
+                } 
+              } ) 
+              resultMessage= JSON.stringify({step: "RESULT", observation: imageChat.choices[0].message.content } ) 
+            } 
+            else 
+            { 
+              resultMessage= JSON.stringify({step: "RESULT", observation: result.message } ) 
+            } 
+            messages.push({role: "assistant", content: resultMessage } ) 
+          } 
+          else if(res.tool_name== "scroll" ) 
+          { 
+            const result= await scroll(page, "down", res.tool_args.amount ) 
+            messages.push({role: "assistant", content: JSON.stringify({step: "RESULT", observation: result.message } ) } ) 
           } 
           else 
           { 
-            resultMessage= JSON.stringify({step: "RESULT", observation: result.message } ) 
+            let result= {message: "Invalid Tool Name " } 
+            if(res.tool_name== "getFormCoordinatesByLabel" ) 
+            { 
+              result= await getFormCoordinatesByLabel(page, res.tool_args.label ) 
+            } 
+            else if(res.tool_name== "clickOnScreen" ) 
+            { 
+              result= await clickOnScreen(page, res.tool_args.x, res.tool_args.y ) 
+            } 
+            else if(res.tool_name== "doubleClick" ) 
+            { 
+              result= await doubleClick(page, res.tool_args.x, res.tool_args.y ) 
+            } 
+            else if(res.tool_name== "sendKeys" ) 
+            { 
+              result= await sendKeys(page, res.tool_args.keys ) 
+            } 
+            messages.push({role: "assistant", content: JSON.stringify({step: "RESULT", observation: result.message } ) } ) 
           } 
-          messages.push({role: "assistant", content: resultMessage } ) 
         } 
-        else if(res.tool_name== "scroll" ) 
+        else if(res.step== "RESULT" ) 
         { 
-          const result= await scroll(page, "down", res.tool_args.amount ) 
-          messages.push({role: "assistant", content: JSON.stringify({step: "RESULT", observation: result.message } ) } ) 
+          messages.push({role: "assistant", content: JSON.stringify(res ) } ) 
         } 
-        else 
+        else if(res.step== "END" ) 
         { 
-          let result= {message: "Invalid Tool Name " } 
-          if(res.tool_name== "getFormCoordinatesByLabel" ) 
-          { 
-            result= await getFormCoordinatesByLabel(page, res.tool_args.label ) 
-          } 
-          else if(res.tool_name== "clickOnScreen" ) 
-          { 
-            result= await clickOnScreen(page, res.tool_args.x, res.tool_args.y ) 
-          } 
-          else if(res.tool_name== "doubleClick" ) 
-          { 
-            result= await doubleClick(page, res.tool_args.x, res.tool_args.y ) 
-          } 
-          else if(res.tool_name== "sendKeys" ) 
-          { 
-            result= await sendKeys(page, res.tool_args.keys ) 
-          } 
-          messages.push({role: "assistant", content: JSON.stringify({step: "RESULT", observation: result.message } ) } ) 
+          break ; 
         } 
       } 
-      else if(res.step== "RESULT" ) 
-      { 
-        messages.push({role: "assistant", content: JSON.stringify(res ) } ) 
-      } 
-      else if(res.step== "END" ) 
-      { 
-        break ; 
-      } 
-      setTimeout(()=> 
-      {}, 5000 ) 
     } 
+
+    await main() 
 } ) 
