@@ -1,0 +1,21 @@
+{
+  "name": "browser-automation-tool",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": { 
+    "start": "npx playwright test --ui" 
+  }, 
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.2"
+  },
+  "dependencies": {
+    "@google/genai": "^2.8.0",
+    "@openrouter/sdk": "^0.12.79",
+    "dotenv": "^17.4.2"
+  }
+}
