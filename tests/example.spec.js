@@ -42,9 +42,9 @@ async function takeScreenshot(page )
 { 
   try 
   { 
-    const screenshot= await page.screenshot({fullPage: true } ) 
+    const screenshot= await page.screenshot() 
 
-    screenshotPayload= `data:image/png;base64,${screenshot.toString("base64" ) }` 
+    screenshotPayload= `data:image/png;base64,${screenshot.toString("base64")}` 
 
     return {"status": "Successful" } 
   } catch (error ) 
@@ -433,7 +433,7 @@ test("fill form ", async()=>
 
   assistant: {"step": "RESULT", "observation": "Visible fields: Username, Address, Posts."}
 
-  assistant: {"step": "THINK", "observation": "'Username' is now visible. I'll get its coordinates using getFormCoordinatesByLabel()."}
+  assistant: {"step": "THINK", "observation": Found one of the fields, 'Username'. It is now visible, I'll get its coordinates using getFormCoordinatesByLabel()."}
 
   assistant: {"step": "ACTION", "tool_name": "getFormCoordinatesByLabel", "tool_args": {"label": "Username"}, "observation": "Locating the Username field."}
 
@@ -463,7 +463,7 @@ test("fill form ", async()=>
 
   assistant: {"step": "RESULT", "observation": "Visible fields: More about you, Stories."}
 
-  assistant: {"step": "THINK", "observation": "'More about you' is visible. I'll get its coordinates."}
+  assistant: {"step": "THINK", "observation": "Found another field, 'More about you'. It is visible, I'll get its coordinates."} 
 
   assistant: {"step": "ACTION", "tool_name": "getFormCoordinatesByLabel", "tool_args": {"label": "More about you"}, "observation": "Locating the 'More about you' field."}
 
@@ -499,7 +499,7 @@ test("fill form ", async()=>
         const response= await client.chat.send({ 
           chatRequest: 
           { 
-            model: "openai/gpt-oss-120b:free", 
+            model: "deepseek/deepseek-r1", 
             //@ts-ignore 
             messages: messages, 
             temperature: 0.02, 
@@ -540,20 +540,22 @@ test("fill form ", async()=>
               const imageChat= await client.chat.send({ 
                 chatRequest: 
                 { 
-                  model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", 
+                  model: "openai/gpt-4o-mini", 
                   messages: [{ 
-                    role: "assistant", 
+                    role: "user", 
                     content: [{ 
                       type: "text", 
-                      text: "What are fields and labels visible on the viewport of this page? " 
+                      text: "Only name the Form fields and labels visible on the viewport of this Web Browser Page that can be accessed by the page.getByLabel(name) Locator Function of the Playwright Browser Automation Tool, in Plain Text." 
                     }, { 
                       type: "image_url", 
-                      imageUrl: {url: screenshotPayload } 
+                      imageUrl: { 
+                        url: screenshotPayload, 
+                        detail: "high" 
+                      } 
                     } ] 
                   } ], 
                   temperature: 0.05, 
                   stream: false, 
-                  responseFormat: {type: "json_object" } 
                 } 
               } ) 
               resultMessage= JSON.stringify({step: "RESULT", observation: imageChat.choices[0].message.content } ) 
@@ -562,6 +564,7 @@ test("fill form ", async()=>
             { 
               resultMessage= JSON.stringify({step: "RESULT", observation: result.message } ) 
             } 
+            console.log(resultMessage ) 
             messages.push({role: "assistant", content: resultMessage } ) 
           } 
           else if(res.tool_name== "scroll" ) 
