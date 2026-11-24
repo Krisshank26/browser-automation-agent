@@ -485,9 +485,7 @@ test("fill form ", async()=>
 
   assistant: {"step": "END", "observation": "Task completed: both fields were located and filled successfully."} ` 
 
-    const userQuery= `Navigate to: https://ui.shadcn.com/docs/forms/react-hook-form
-    Identify the form elements on the page (Username and Description fields)
-    Automatically fill in the Username and Description. ` 
+    const userQuery= `Navigate to YouTube check for third video Click on the third suggestion video that is there. ` 
 
     let messages= [{role: "system", content: system_prompt }, {role: "user", content: userQuery } ] 
 
